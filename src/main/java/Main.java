@@ -1,7 +1,8 @@
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class Main {
   public static void main(String[] args) {
@@ -13,13 +14,30 @@ public class Main {
 
          Socket clientSocket = serverSocket.accept(); // Wait for connection from client.
          System.out.println("accepted new connection");
+
+         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+         String requestLine = in.readLine();
+         URI uri = null;
+         if (requestLine != null) {
+             String[] parts = requestLine.split(" ");
+             if (parts.length > 2) {
+                 uri = new URI(parts[1]);
+                 System.out.println("Request path: " + uri.getPath());
+             }
+             System.out.println("Received request: " + requestLine);
+         }
+
          OutputStream out = clientSocket.getOutputStream();
-         String response = "HTTP/1.1 200 OK\r\n\r\n";
+         String response = "";
+         if (uri != null && "/".equals(uri.getPath()))
+            response = "HTTP/1.1 200 OK\r\n\r\n";
+         else
+             response = "HTTP/1.1 404 Not Found\r\n\r\n";
          out.write(response.getBytes());
          out.flush();
          clientSocket.close();
-     } catch (IOException e) {
-       System.out.println("IOException: " + e.getMessage());
+     } catch (IOException | URISyntaxException e) {
+       System.out.println("Exception: " + e.getMessage());
      }
   }
 }
