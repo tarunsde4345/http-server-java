@@ -1,5 +1,8 @@
 package server;
 
+import controllers.EchoController;
+import controllers.RootController;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,10 +14,17 @@ import java.net.URISyntaxException;
 
 public class HttpServer {
     private final int port;
+    private final FrontController frontController;
     private boolean running = false;
 
     public HttpServer(int port) {
         this.port = port;
+
+        Router router = new Router();
+        router.register("/", new RootController());
+        router.register("/echo", new EchoController());
+
+        this.frontController = new FrontController(router);
     }
 
     public void start() {
@@ -36,11 +46,11 @@ public class HttpServer {
                 System.out.println("ClientSocket info:");
                 System.out.println("  Remote Socket Address: " + clientSocket.getRemoteSocketAddress());
                 System.out.println("  Local Socket Address: " + clientSocket.getLocalSocketAddress());
-                // Print the raw HTTP request
+
+                HttpConnection connection = new HttpConnection(clientSocket, frontController);
+                connection.handle();
 
             }
-
-
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         }
