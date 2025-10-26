@@ -7,6 +7,8 @@ public class RootController implements Controller {
 
     @Override
     public HttpResponse handle(HttpRequest reqeust) {
-        return new HttpResponse(200, "Welcome to the Home Page!");
+        return HttpResponse.builder()
+                .text("Welcome to the Home Page!")
+                .build();
     }
 }

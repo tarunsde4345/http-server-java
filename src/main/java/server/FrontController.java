@@ -17,12 +17,16 @@ public class FrontController {
             Controller controller = router.resolve(reqeust.getPath()); //method should also be considered
 
             if (controller == null) {
-                return new HttpResponse(404, "Not Found");
+                return HttpResponse.builder()
+                        .status(404)
+                        .build();
             }
             return controller.handle(reqeust);
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to handle request: " + e.getMessage());
-            return new HttpResponse(500, "Internal Server Error");
+            return HttpResponse.builder()
+                    .status(500)
+                    .build();
         }
 
     }

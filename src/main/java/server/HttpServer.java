@@ -1,16 +1,13 @@
 package server;
 
 import controllers.EchoController;
+import controllers.PublicFileController;
 import controllers.RootController;
+import controllers.UserAgentController;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class HttpServer {
     private final int port;
@@ -23,6 +20,8 @@ public class HttpServer {
         Router router = new Router();
         router.register("/", new RootController());
         router.register("/echo", new EchoController());
+        router.register("/user-agent", new UserAgentController());
+        router.register("/public/readme.txt", new PublicFileController());
 
         this.frontController = new FrontController(router);
     }
@@ -48,7 +47,7 @@ public class HttpServer {
                 System.out.println("  Local Socket Address: " + clientSocket.getLocalSocketAddress());
 
                 HttpConnection connection = new HttpConnection(clientSocket, frontController);
-                connection.handle();
+                new Thread(connection).start();
 
             }
         } catch (IOException e) {
