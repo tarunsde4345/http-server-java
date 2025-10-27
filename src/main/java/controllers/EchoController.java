@@ -4,7 +4,7 @@ import http.HttpResponse;
 
 public class EchoController implements Controller {
     @Override
-    public http.HttpResponse handle(http.HttpRequest request) {
+    public http.HttpResponse get(http.HttpRequest request) {
         String body = "You requested: " + request.getPath();
         if (request.getQueryParams().get("sleep") != null) {
             try {

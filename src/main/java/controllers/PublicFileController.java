@@ -9,13 +9,8 @@ import java.nio.file.Path;
 public class PublicFileController implements Controller {
     private static final Path PUBLIC_DIR = Path.of("public");
     @Override
-    public HttpResponse handle(HttpRequest request) {
+    public HttpResponse get(HttpRequest request) {
         String path = request.getPath();
-        if (!path.startsWith("/public/")) {
-            return HttpResponse.builder()
-                    .status(404)
-                    .build();
-        }
 
         Path filePath = PUBLIC_DIR.resolve(request.getPath().substring(8)).normalize();
         if (filePath.toString().contains("..")) {
@@ -41,6 +36,34 @@ public class PublicFileController implements Controller {
             return HttpResponse.builder()
                     .status(404)
                     .text("File Not Found")
+                    .build();
+        }
+    }
+
+    @Override
+    public HttpResponse post(HttpRequest request) {
+        String path = request.getPath();
+
+        Path filePath = PUBLIC_DIR.resolve(request.getPath().substring(8)).normalize();
+        if (filePath.toString().contains("..")) {
+            return HttpResponse.builder()
+                    .status(400)
+                    .build();
+        }
+        if (!filePath.startsWith(PUBLIC_DIR)) {
+            return HttpResponse.builder()
+                    .status(403)
+                    .text("Forbidden")
+                    .build();
+        }
+        try {
+            Files.writeString(filePath, request.getBody());
+            return HttpResponse.builder()
+                    .status(201)
+                    .build();
+        } catch (java.io.IOException e) {
+            return HttpResponse.builder()
+                    .status(404)
                     .build();
         }
     }

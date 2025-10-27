@@ -6,7 +6,7 @@ import http.HttpResponse;
 public class RootController implements Controller {
 
     @Override
-    public HttpResponse handle(HttpRequest reqeust) {
+    public HttpResponse get(HttpRequest reqeust) {
         return HttpResponse.builder()
                 .text("Welcome to the Home Page!")
                 .build();

@@ -1,8 +1,9 @@
 package server;
 
-import controllers.Controller;
 import http.HttpRequest;
 import http.HttpResponse;
+import server.router.PathMatchResult;
+import server.router.Router;
 
 public class FrontController {
     //gets message, has router to help decide where to send it
@@ -14,14 +15,23 @@ public class FrontController {
 
     public HttpResponse handleRequest(HttpRequest reqeust) {
         try {
-            Controller controller = router.resolve(reqeust.getPath()); //method should also be considered
-
-            if (controller == null) {
-                return HttpResponse.builder()
-                        .status(404)
-                        .build();
+            PathMatchResult resolution = router.resolve(reqeust); //method should also be considered
+            switch (resolution) {
+                case PathMatchResult.Found f -> {
+                    return f.route().getController().handle(reqeust);
+                }
+                case PathMatchResult.MethodNotAllowed m -> {
+                    return HttpResponse.builder()
+                            .status(405)
+                            .header("Allow", String.join(", ", m.allowed()))
+                            .build();
+                }
+                case PathMatchResult.NotFound n -> {
+                    return HttpResponse.builder()
+                            .status(404)
+                            .build();
+                }
             }
-            return controller.handle(reqeust);
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to handle request: " + e.getMessage());
             return HttpResponse.builder()

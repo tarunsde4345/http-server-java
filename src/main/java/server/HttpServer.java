@@ -4,6 +4,7 @@ import controllers.EchoController;
 import controllers.PublicFileController;
 import controllers.RootController;
 import controllers.UserAgentController;
+import server.router.Router;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -18,10 +19,11 @@ public class HttpServer {
         this.port = port;
 
         Router router = new Router();
-        router.register("/", new RootController());
-        router.register("/echo", new EchoController());
-        router.register("/user-agent", new UserAgentController());
-        router.register("/public/readme.txt", new PublicFileController());
+        router.get("/", new RootController());
+        router.get("/echo", new EchoController());
+        router.get("/user-agent", new UserAgentController());
+        router.get("/public/{file}", new PublicFileController());
+        router.post("/public/{file}", new PublicFileController());
 
         this.frontController = new FrontController(router);
     }
