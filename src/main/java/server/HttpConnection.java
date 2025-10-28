@@ -1,9 +1,8 @@
 package server;
 
-import http.HttpRequest;
-import http.HttpRequestParser;
-import http.HttpResponse;
-import http.HttpResponseWriter;
+import http.*;
+import middlewares.HttpCompressionMiddleware;
+import middlewares.MiddlewareManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,8 +36,12 @@ public class HttpConnection implements Runnable {
             HttpRequest request = HttpRequestParser.parse(in);
             System.out.println("Received request: " + request);
 
-            HttpResponse response = frontController.handleRequest(request);
-            HttpResponseWriter.write(response, out);
+            HttpResponse response = new HttpResponse();
+            frontController.handleRequest(request, response);
+            MiddlewareManager responseMiddlewareManager = new MiddlewareManager();
+            responseMiddlewareManager.use(new HttpCompressionMiddleware());
+            responseMiddlewareManager.execute(request, response);
+            HttpResponseWriter.write(response.toImmutable(), out);
         } catch (IOException e) {
             System.err.println("HttpConnection.handle() [I/O ERROR] Problem handling client: " + e.getMessage());
         } catch (Exception e) {

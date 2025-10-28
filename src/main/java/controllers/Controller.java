@@ -4,30 +4,30 @@ import http.HttpRequest;
 import http.HttpResponse;
 
 public interface Controller {
-    default HttpResponse get(HttpRequest request) {
-        return HttpResponse.builder().status(405).build();
+    default void get(HttpRequest request, HttpResponse response) {
+        response.status(405);
     }
 
-    default HttpResponse post(HttpRequest request) {
-        return HttpResponse.builder().status(405).build();
+    default void post(HttpRequest request, HttpResponse response) {
+        response.status(405);
     }
 
-    default HttpResponse put(HttpRequest request) {
-        return HttpResponse.builder().status(405).build();
+    default void put(HttpRequest request, HttpResponse response) {
+        response.status(405);
     }
 
-    default HttpResponse delete(HttpRequest request) {
-        return HttpResponse.builder().status(405).build();
+    default void delete(HttpRequest request, HttpResponse response) {
+        response.status(405);
     }
 
-    default HttpResponse handle(HttpRequest request) {
+    default void handle(HttpRequest request, HttpResponse response) {
         // dispatcher within handler
-        return switch (request.getMethod()) {
-            case "GET" -> get(request);
-            case "POST" -> post(request);
-            case "PUT" -> put(request);
-            case "DELETE" -> delete(request);
-            default -> HttpResponse.builder().status(405).build();
+        switch (request.getMethod()) {
+            case "GET" -> get(request, response);
+            case "POST" -> post(request, response);
+            case "PUT" -> put(request, response);
+            case "DELETE" -> delete(request, response);
+            default -> response.status(405);
         };
     }
 }

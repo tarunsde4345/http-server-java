@@ -47,6 +47,10 @@ public class HttpRequest {
         return body;
     }
 
+    public String getHeader(String headerName) {
+        return headers.get(headerName);
+    }
+
     @Override
     public String toString() {
         return method + " "+ path + " " + httpVersion +

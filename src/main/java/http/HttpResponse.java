@@ -9,11 +9,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HttpResponse {
-    private final String httpVersion;
-    private final int statusCode;
-    private final String reasonPhrase;
-    private final Map<String, String> headers;
-    private final byte[] body;
+    private String httpVersion = "HTTP/1.1";
+    private int statusCode = 200;
+    private String reasonPhrase = "OK";
+    private final Map<String, String> headers = new LinkedHashMap<>();
+    private byte[] body = new byte[0];
 
     private static final Map<Integer, String> REASONS = Map.ofEntries(
             Map.entry(100, "Continue"),
@@ -55,13 +55,7 @@ public class HttpResponse {
             Map.entry(505, "HTTP Version Not Supported")
     );
 
-    public HttpResponse(Builder builder) {
-        this.httpVersion = builder.httpVersion;
-        this.statusCode = builder.statusCode;
-        this.reasonPhrase = builder.reasonPhrase;
-        this.headers = Map.copyOf(builder.headers);
-        this.body = builder.body != null ? builder.body : new byte[0];
-    }
+    public HttpResponse() {}
 
     public String getHttpVersion() {
         return httpVersion;
@@ -83,100 +77,68 @@ public class HttpResponse {
         return body;
     }
 
+    public HttpResponse version(String httpVersion) {
+        this.httpVersion = httpVersion;
+        return this;
+    }
+
+    public HttpResponse status(int statusCode) {
+        this.statusCode = statusCode;
+        this.reasonPhrase = reason(statusCode);
+        return this;
+    }
+
+    public HttpResponse status(int statusCode, String reasonPhrase) {
+        this.statusCode = statusCode;
+        this.reasonPhrase = reasonPhrase;
+        return this;
+    }
+
+    public HttpResponse header(String name, String value) {
+        this.headers.put(name, value);
+        return this;
+    }
+
+    public HttpResponse contentType(String contentType) {
+        return header("Content-Type", contentType);
+    }
+
+    public HttpResponse body(String text) {
+        this.body = text.getBytes(StandardCharsets.UTF_8);
+        return this;
+    }
+
+    public HttpResponse body(byte[] data) {
+        this.body = data != null ? data : new byte[0];
+        return this;
+    }
+
+    public HttpResponse text(String text) {
+        return contentType("text/plain; charset=utf-8")
+                .body(text.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public HttpResponse json(Object pojo) {
+        try {
+            byte[] jsonByte = JSONUtil.writeValueAsBytes(pojo);
+            return contentType("application/json; charset=utf-8")
+                    .body(jsonByte);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize object to JSON", e);
+        }
+    }
+
     private static String reason(int code) {
         return REASONS.getOrDefault(code, "Unknown Status");
     }
 
-    public static Builder builder() { return new Builder(); }
 
-
-    @Override
-    public String toString() {
-        return "HttpResponse: " +
-                httpVersion + " " + statusCode + " " + reasonPhrase +
-                "\n headers=" + headers +
-                "\n body=" + body.length + " bytes" +
-                (body.length > 0 ? ", preview='" + previewBody() + "'" : "");
-    }
-
-    private String previewBody() {
-        if (body.length == 0) return "";
-        try {
-            String text = new String(body, StandardCharsets.UTF_8);
-            return text.length() > 100
-                    ? text.substring(0, 97) + "..."
-                    : text;
-        } catch (Exception e) {
-            return "[binary or invalid UTF-8]";
-        }
-    }
-
-    public static class Builder {
-        private String httpVersion = "HTTP/1.1";
-        private int statusCode = 200;
-        private String reasonPhrase = "OK";
-        private final Map<String, String> headers = new LinkedHashMap<>();
-        private byte[] body = new byte[0];
-
-        private Builder() {}
-
-        public Builder version(String httpVersion) {
-            this.httpVersion = httpVersion;
-            return this;
-        }
-
-        public Builder status(int statusCode) {
-            this.statusCode = statusCode;
-            this.reasonPhrase = reason(statusCode);
-            return this;
-        }
-
-        public Builder status(int statusCode, String reasonPhrase) {
-            this.statusCode = statusCode;
-            this.reasonPhrase = reasonPhrase;
-            return this;
-        }
-
-        public Builder header(String name, String value) {
-            this.headers.put(name, value);
-            return this;
-        }
-
-        public Builder contentType(String contentType) {
-            return header("Content-Type", contentType);
-        }
-
-        public Builder body(String text) {
-            this.body = text.getBytes(StandardCharsets.UTF_8);
-            return this;
-        }
-
-        public Builder body(byte[] data) {
-            this.body = data != null ? data : new byte[0];
-            return this;
-        }
-
-        public Builder text(String text) {
-            return contentType("text/plain; charset=utf-8")
-                    .body(text.getBytes(StandardCharsets.UTF_8));
-        }
-
-        public Builder json(Object pojo) {
-            try {
-                byte[] jsonByte = JSONUtil.writeValueAsBytes(pojo);
-                return contentType("application/json; charset=utf-8")
-                        .body(jsonByte);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to serialize object to JSON", e);
-            }
-        }
-
-        public HttpResponse build() {
-            headers.put("Content-Length", String.valueOf(body.length));
-            headers.putIfAbsent("Date", HttpDateFormatUtil.format());
-            headers.putIfAbsent("Server", "JavaHTTPServer/1.0");
-            headers.putIfAbsent("Connection", "close");
-            return new HttpResponse(this);
-        }
+    public ImmutableHttpResponse toImmutable() {
+        headers.put("Content-Length", String.valueOf(body.length));
+        headers.putIfAbsent("Date", HttpDateFormatUtil.format());
+        headers.putIfAbsent("Server", "JavaHTTPServer/1.0");
+        headers.putIfAbsent("Connection", "close");
+        return new ImmutableHttpResponse(this);
     }
 }
+

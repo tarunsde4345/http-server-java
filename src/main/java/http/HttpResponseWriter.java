@@ -8,7 +8,7 @@ public class HttpResponseWriter {
 
     private HttpResponseWriter() {}
 
-    public static void write(HttpResponse response, OutputStream out) throws IOException {
+    public static void write(ImmutableHttpResponse response, OutputStream out) throws IOException {
         // Write status line + headers
         ByteArrayOutputStream headerBuffer = new ByteArrayOutputStream(256);
 

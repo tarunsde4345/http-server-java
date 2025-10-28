@@ -13,30 +13,24 @@ public class FrontController {
         this.router = router;
     }
 
-    public HttpResponse handleRequest(HttpRequest reqeust) {
+    public void handleRequest(HttpRequest request, HttpResponse response) {
         try {
-            PathMatchResult resolution = router.resolve(reqeust); //method should also be considered
+            PathMatchResult resolution = router.resolve(request); //method should also be considered
             switch (resolution) {
                 case PathMatchResult.Found f -> {
-                    return f.route().getController().handle(reqeust);
+                    f.route().getController().handle(request, response);
                 }
                 case PathMatchResult.MethodNotAllowed m -> {
-                    return HttpResponse.builder()
-                            .status(405)
-                            .header("Allow", String.join(", ", m.allowed()))
-                            .build();
+                    response.status(405)
+                            .header("Allow", String.join(", ", m.allowed()));
                 }
                 case PathMatchResult.NotFound n -> {
-                    return HttpResponse.builder()
-                            .status(404)
-                            .build();
+                    response.status(404);
                 }
             }
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to handle request: " + e.getMessage());
-            return HttpResponse.builder()
-                    .status(500)
-                    .build();
+            response.status(500);
         }
 
     }

@@ -1,10 +1,11 @@
 package controllers;
 
+import http.HttpRequest;
 import http.HttpResponse;
 
 public class EchoController implements Controller {
     @Override
-    public http.HttpResponse get(http.HttpRequest request) {
+    public void get(HttpRequest request, HttpResponse response) {
         String body = "You requested: " + request.getPath();
         if (request.getQueryParams().get("sleep") != null) {
             try {
@@ -15,9 +16,8 @@ public class EchoController implements Controller {
                 body += "\nInvalid sleep parameter.";
             }
         }
-        return HttpResponse.builder()
-                .status(200)
-                .text(body)
-                .build();
+        response.status(200)
+                .text(body);
+
     }
 }

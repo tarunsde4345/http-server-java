@@ -6,10 +6,8 @@ import http.HttpResponse;
 public class UserAgentController implements Controller {
 
     @Override
-    public HttpResponse get(HttpRequest request) {
-        return HttpResponse.builder()
-                .status(200)
-                .text(request.getHeaders().getOrDefault("User-Agent", "User-Agent not found"))
-                .build();
+    public void get(HttpRequest request, HttpResponse response) {
+        response.status(200)
+                .text(request.getHeaders().getOrDefault("User-Agent", "User-Agent not found"));
     }
 }
