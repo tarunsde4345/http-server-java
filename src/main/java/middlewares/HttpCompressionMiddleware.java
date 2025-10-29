@@ -18,6 +18,10 @@ public class HttpCompressionMiddleware implements Middleware {
 
         try {
             byte[] compressed = CompressionUtil.compress(response.getBody(), encoding);
+            if (encoding == ContentEncoding.NONE) {
+                chain.next(reqeust, response);
+                return;
+            }
             response.body(compressed)
                     .header(HttpConstants.Headers.CONTENT_ENCODING, encoding.headerValue())
                     .header(HttpConstants.Headers.VARY, HttpConstants.Headers.ACCEPT_ENCODING);

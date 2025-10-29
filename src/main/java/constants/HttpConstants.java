@@ -37,6 +37,8 @@ public final class HttpConstants {
         public static final String TRANSFER_ENCODING   = "Transfer-Encoding";
         public static final String LOCATION            = "Location";
         public static final String SET_COOKIE          = "Set-Cookie";
+        public static final String SERVER              = "Server";
+        public static final String DATE                = "Date";
     }
 
     public static final class MimeTypes {

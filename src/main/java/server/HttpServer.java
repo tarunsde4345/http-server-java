@@ -1,5 +1,6 @@
 package server;
 
+import constants.ServerConstants;
 import controllers.EchoController;
 import controllers.PublicFileController;
 import controllers.RootController;
@@ -9,6 +10,7 @@ import server.router.Router;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class HttpServer {
     private final int port;
@@ -28,12 +30,18 @@ public class HttpServer {
         this.frontController = new FrontController(router);
     }
 
+    public HttpServer() {
+        this(ServerConstants.DEFAULT_SERVER_PORT);
+    }
+
     public void start() {
         running = true;
 
         //create front controller
         try (ServerSocket serverSocket = new ServerSocket(this.port)) {
             serverSocket.setReuseAddress(true);
+            serverSocket.setSoTimeout(ServerConstants.CONNECTION_TIMEOUT_MS);
+
             System.out.println("Listening on port " + this.port + "...");
             // Print important ServerSocket parameters
             System.out.println("ServerSocket info:");
@@ -52,6 +60,8 @@ public class HttpServer {
                 new Thread(connection).start();
 
             }
+        } catch (SocketTimeoutException e) {
+//            System.err.println("Keep-Alive timeout: closing idle connection");
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         }

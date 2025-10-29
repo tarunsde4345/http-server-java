@@ -1,5 +1,7 @@
 package http;
 
+import constants.HttpConstants.Headers;
+import constants.ServerConstants;
 import utils.HttpDateFormatUtil;
 import utils.JSONUtil;
 
@@ -77,6 +79,10 @@ public class HttpResponse {
         return body;
     }
 
+    public String getHeader(String headerName) {
+        return headers.get(headerName);
+    }
+
     public HttpResponse version(String httpVersion) {
         this.httpVersion = httpVersion;
         return this;
@@ -134,10 +140,10 @@ public class HttpResponse {
 
 
     public ImmutableHttpResponse toImmutable() {
-        headers.put("Content-Length", String.valueOf(body.length));
-        headers.putIfAbsent("Date", HttpDateFormatUtil.format());
-        headers.putIfAbsent("Server", "JavaHTTPServer/1.0");
-        headers.putIfAbsent("Connection", "close");
+        headers.put(Headers.CONTENT_LENGTH, String.valueOf(body.length));
+        headers.putIfAbsent(Headers.DATE, HttpDateFormatUtil.format());
+        headers.putIfAbsent(Headers.SERVER, ServerConstants.SERVER_NAME);
+        headers.putIfAbsent(Headers.CONNECTION, "keep-alive");
         return new ImmutableHttpResponse(this);
     }
 }
